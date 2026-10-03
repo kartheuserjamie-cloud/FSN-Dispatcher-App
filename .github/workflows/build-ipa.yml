@@ -23,25 +23,23 @@ jobs:
       - name: 📦 Install dependencies
         run: npm install
 
-      - name: 🛠 Generate iOS Project
-        run: npx expo prebuild --platform ios --clean
+      - name: 🚀 Configure EAS
+        run: npx eas-cli init --account femboy-support-network-e-v --non-interactive
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
-      - name: 🍎 Build Unsigned App with Xcode
-        run: |
-          cd ios
-          # Finde den genauen Namen des Workspaces und Schemes
-          WORKSPACE=$(ls -1 | grep -e '\.xcworkspace$' | head -n 1)
-          SCHEME=$(basename "$WORKSPACE" .xcworkspace)
-          
-          # Baue die App ohne Zertifikate für iOS (iphoneos)
-          xcodebuild -workspace "$WORKSPACE" -scheme "$SCHEME" -configuration Release -sdk iphoneos -derivedDataPath build CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+      - name: 🛠 Build with EAS Local (Simulator profile)
+        run: npx eas-cli build --platform ios --local --non-interactive --profile production
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
       - name: 📦 Package to IPA
         run: |
+          # EAS generiert eine .tar.gz Datei (z.B. build-xxx.tar.gz)
+          # Wir entpacken diese und machen daraus eine .ipa
           mkdir -p Payload
-          # Kopiere die .app Datei in den Payload Ordner
-          cp -r ios/build/Build/Products/Release-iphoneos/*.app Payload/
-          # Zippe den Payload Ordner zu einer .ipa Datei
+          tar -xf build-*.tar.gz
+          cp -r *.app Payload/
           zip -qr FSN-Dispatcher.ipa Payload
 
       - name: 📤 Upload Artifact
