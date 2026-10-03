@@ -1,0 +1,51 @@
+name: Build Unsigned iOS IPA
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    name: Build iOS IPA
+    runs-on: macos-latest
+    steps:
+      - name: 🏗 Setup repo
+        uses: actions/checkout@v3
+
+      - name: 🏗 Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22.x
+          cache: npm
+
+      - name: 📦 Install dependencies
+        run: npm install
+
+      - name: 🛠 Generate iOS Project
+        run: npx expo prebuild --platform ios --clean
+
+      - name: 🍎 Build Unsigned App with Xcode
+        run: |
+          cd ios
+          # Finde den genauen Namen des Workspaces und Schemes
+          WORKSPACE=$(ls -1 | grep -e '\.xcworkspace$' | head -n 1)
+          SCHEME=$(basename "$WORKSPACE" .xcworkspace)
+          
+          # Baue die App ohne Zertifikate für iOS (iphoneos)
+          xcodebuild -workspace "$WORKSPACE" -scheme "$SCHEME" -configuration Release -sdk iphoneos -derivedDataPath build CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+
+      - name: 📦 Package to IPA
+        run: |
+          mkdir -p Payload
+          # Kopiere die .app Datei in den Payload Ordner
+          cp -r ios/build/Build/Products/Release-iphoneos/*.app Payload/
+          # Zippe den Payload Ordner zu einer .ipa Datei
+          zip -qr FSN-Dispatcher.ipa Payload
+
+      - name: 📤 Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: FSN-Dispatcher-IPA
+          path: FSN-Dispatcher.ipa
