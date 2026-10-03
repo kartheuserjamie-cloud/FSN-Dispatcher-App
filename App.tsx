@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert, ScrollView, Linking, AppState, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Audio } from 'expo-av';
+import Sound from 'react-native-sound';
 import axios from 'axios';
 
 // Replace this with your actual backend URL in production
 const API_BASE_URL = 'http://192.168.178.69:3001/api'; 
 // Note: using local IP is important for Expo Go testing, update to the production URL later.
+
+// Enable playback in silence mode
+Sound.setCategory('Playback');
 
 export default function App() {
   const [token, setToken] = useState<string | null>(null);
@@ -16,7 +19,7 @@ export default function App() {
   const [password, setPassword] = useState('');
   
   const [jobs, setJobs] = useState<any[]>([]);
-  const [alarmSound, setAlarmSound] = useState<Audio.Sound | null>(null);
+  const [alarmSound, setAlarmSound] = useState<Sound | null>(null);
   
   const knownJobIds = useRef<Set<string>>(new Set());
 
@@ -24,21 +27,17 @@ export default function App() {
     loadUser();
     
     // Load alarm sound
-    async function loadSound() {
-      try {
-        const { sound } = await Audio.Sound.createAsync(
-          { uri: 'https://cdn.freesound.org/previews/316/316847_4939433-lq.mp3' } // Loud alarm sound from freesound
-        );
-        setAlarmSound(sound);
-      } catch (err) {
-        console.error("Failed to load sound", err);
+    const alarm = new Sound('https://cdn.freesound.org/previews/316/316847_4939433-lq.mp3', undefined, (error) => {
+      if (error) {
+        console.error("Failed to load sound", error);
+        return;
       }
-    }
-    loadSound();
+    });
+    setAlarmSound(alarm);
     
     return () => {
-      if (alarmSound) {
-        alarmSound.unloadAsync();
+      if (alarm) {
+        alarm.release();
       }
     };
   }, []);
@@ -81,7 +80,11 @@ export default function App() {
   const playAlarm = async () => {
     if (alarmSound) {
       try {
-        await alarmSound.playAsync();
+        alarmSound.play((success) => {
+          if (!success) {
+            console.error('Sound playback failed');
+          }
+        });
       } catch (err) {
         console.error("Failed to play alarm", err);
       }
