@@ -21,7 +21,9 @@ jobs:
           cache: npm
 
       - name: 📦 Install dependencies
-        run: npm install
+        run: |
+          npm install
+          npx expo install --fix
 
       - name: 🛠 Generate iOS Project
         run: npx expo prebuild --platform ios --clean
