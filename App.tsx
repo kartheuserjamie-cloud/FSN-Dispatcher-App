@@ -65,7 +65,11 @@ export default function App() {
         setUser(res.data.user);
       }
     } catch (err: any) {
-      Alert.alert('Fehler', err.response?.data?.error || 'Login fehlgeschlagen');
+      if (!err.response) {
+        Alert.alert('Netzwerk-Fehler', 'Server nicht erreichbar. Bist du im gleichen WLAN? (' + err.message + ')');
+      } else {
+        Alert.alert('Fehler', err.response?.data?.error || 'Login fehlgeschlagen');
+      }
     }
   };
 

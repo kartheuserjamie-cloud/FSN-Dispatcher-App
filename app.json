@@ -9,7 +9,12 @@
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.femboysupportnetwork.dispatcher"
+      "bundleIdentifier": "com.femboysupportnetwork.dispatcher",
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        }
+      }
     },
     "android": {
       "package": "com.femboysupportnetwork.dispatcher",
