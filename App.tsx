@@ -4,9 +4,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Sound from 'react-native-sound';
 import axios from 'axios';
 
-// Replace this with your actual backend URL in production
-const API_BASE_URL = 'https://femboysupportnetwork-ev.de/api'; 
-// Note: using local IP is important for Expo Go testing, update to the production URL later.
+// Automatically switch between local development and production URLs
+const API_BASE_URL = __DEV__ 
+  ? 'http://192.168.178.69:3001/api' 
+  : 'https://femboysupportnetwork-ev.de/api';
 
 // Enable playback in silence mode
 Sound.setCategory('Playback');
