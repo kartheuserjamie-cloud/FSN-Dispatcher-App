@@ -5,7 +5,7 @@ import Sound from 'react-native-sound';
 import axios from 'axios';
 
 // Replace this with your actual backend URL in production
-const API_BASE_URL = 'http://192.168.178.69:3001/api'; 
+const API_BASE_URL = 'https://femboysupportnetwork-ev.de/api'; 
 // Note: using local IP is important for Expo Go testing, update to the production URL later.
 
 // Enable playback in silence mode
